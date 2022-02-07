@@ -26,10 +26,21 @@ public class Sudoku {
 	 * https://www.sudokuoftheday.com/
 	 * @param int 9x9 Sudoku board
 	 * https://www.sudokuoftheday.com/dailypuzzles/2022-02-06/beginner/solution
-	 * @throws Exception
+	 * @throws IllegalArgumentException
 	 */
-	public void inputBoard(int[][] numForBoard) { //throws Exception {
-		//starter board
+	public void inputBoard(int[][] numForBoard) throws IllegalArgumentException {
+		if (numForBoard.length != SIZE) { //checks if height is SIZE
+			throw new IllegalArgumentException();
+		}
+		else {
+			for (int i = 0; i < SIZE; i++) { //jagged array situation, checks if each row is SIZE
+				if (numForBoard[i].length != SIZE) {
+					throw new IllegalArgumentException();
+				}
+			}
+		}
+
+		//starter board, if no exception is thrown
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
 				board[row][col] = numForBoard[row][col];
@@ -39,7 +50,8 @@ public class Sudoku {
 
 
 	/**
-	 * Checks if the place on Sudoku board is safe (row, col)
+	 * Checks if the place on Sudoku board is safe (row, col, box)
+	 * @return true if empty spot is valid place on board, false if not
 	 */
 	public static boolean isSafe(int[][] board, int row, int col, int num) {
 		int boardLen = board.length;
@@ -82,13 +94,13 @@ public class Sudoku {
 	 */
 	public boolean solveSudoku(int[][] board) {
 		//backtracking
-			//find empty box
+			//finds first empty box
 			//try all numbers
 			//validate row, col, 3x3 box
 			//repeat
 
 		//check row
-		int row = -1;
+		int row = -1; //initialize row, col
 		int col = -1;
 		boolean isEmpty = true;
 		for (int r = 0; r < SIZE; r++) {
@@ -114,18 +126,18 @@ public class Sudoku {
 		for (int desiredNum = 1; desiredNum <= SIZE; desiredNum++) {
 			if (isSafe(board, row, col, desiredNum) == true) {
 				board[row][col] = desiredNum;
-				if (solveSudoku(board) == true) {
-					//print board (FIXME ?)
-					return true;
-				}
+
+				if (solveSudoku(board) == true) { //recursive call
+					return true; //board[row][col] stays as desiredNum
+				} //else, do nothing
 				else {
 					//replace it (FIXME ?)
-					board[row][col] = 0;
+					board[row][col] = 0; //board[row][col] goes back as default
 				}
 			}
 		}
 
-		return false;
+		return false; //cannot solve puzzle
 	} //end solveSudoku()
 
 
@@ -164,7 +176,7 @@ public class Sudoku {
 							{8, 5, 0, 0, 4, 1, 6, 3, 2},
 							{5, 0, 0, 0, 0, 9, 7, 0, 0},
 							{0, 9, 0, 0, 0, 0, 2, 8, 0},
-							{0, 0, 0, 4, 7, 2, 0, 0, 0}};
+							{0, 0, 0, 4, 7, 2, 0, 0, 0},};
 		// solu:
 		// 		{{9, 6, 5, 1, 2, 7, 8, 4, 3},
 		//		{2, 3, 8, 5, 6, 4, 1, 9, 7},
