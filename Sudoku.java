@@ -4,7 +4,7 @@
 
 public class Sudoku {
 	private final int SIZE = 9;
-	private static int[][] board;
+	private char[][] board; //instance variable, space O(1) (generally n^2, but bc size is constant, it's technically 81 for the board, but reduce to 1 bc 81 is 1
 
 
 	/**
@@ -12,10 +12,10 @@ public class Sudoku {
 	 * And each board position is set to an inital int "0".
 	 */
 	public Sudoku () {
-		board = new int[SIZE][SIZE];
+		this.board = new char[SIZE][SIZE]; //instance
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
-				board[row][col] = 0;
+				this.board[row][col] = '.';
 			}
 		}
 	} //end Sudoku()
@@ -24,26 +24,32 @@ public class Sudoku {
 	/**
 	 * Input an initial starting board for Sudoku. Consider using one online, such as
 	 * https://www.sudokuoftheday.com/
-	 * @param int 9x9 Sudoku board
+	 * @param char 9x9 Sudoku board
 	 * https://www.sudokuoftheday.com/dailypuzzles/2022-02-06/beginner/solution
 	 * @throws IllegalArgumentException
 	 */
-	public void inputBoard(int[][] numForBoard) throws IllegalArgumentException {
+	public void inputBoard(char[][] numForBoard) throws IllegalArgumentException {
+		//checks if valid board size
 		if (numForBoard.length != SIZE) { //checks if height is SIZE
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Wrong dimension of a Sudoku board.");
 		}
 		else {
 			for (int i = 0; i < SIZE; i++) { //jagged array situation, checks if each row is SIZE
 				if (numForBoard[i].length != SIZE) {
-					throw new IllegalArgumentException();
+					throw new IllegalArgumentException("Wrong dimension of a Sudoku board.");
 				}
 			}
 		}
 
+		//check if starting nums are valid
+		//check if final board is valid
+		//check if final filled board is valid
+
+
 		//starter board, if no exception is thrown
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
-				board[row][col] = numForBoard[row][col];
+				this.board[row][col] = numForBoard[row][col];
 			}
 		}
 	} //end inputBoard()
@@ -53,37 +59,36 @@ public class Sudoku {
 	 * Checks if the place on Sudoku board is safe (row, col, box)
 	 * @return true if empty spot is valid place on board, false if not
 	 */
-	public static boolean isSafe(int[][] board, int row, int col, int num) {
-		int boardLen = board.length;
+	public boolean isSafe(char[][] board, int row, int col, char ch) {
+		int boardLen = this.board.length;
 
 		//check if num is already in row, change col#
 		for (int c = 0; c < boardLen; c++) {
-			if (board[row][c] == num) {
-				return false;
+			if (this.board[row][c] == ch) {
+				return false; //desiredNum cannot be placed here
 			}
 		}
 
 		//check if num is already in col, change row#
 		for (int r = 0; r < boardLen; r++) {
-			if (board[r][col] == num) {
-				return false;
+			if (this.board[r][col] == ch) {
+				return false; //desiredNum cannot be placed here
 			}
 		}
 
 		//check if num is already in box, checking 1 of 9 3x3 boxes
 		int sqrt = (int)Math.sqrt(boardLen); //3
-		int boxRowStart = row - (row % sqrt); //0, 3, or 6
-		int boxColStart = col - (col % sqrt); //0, 3, or 6
+		int boxRowStart = row - (row % sqrt); //(row/3)*3; //start 0, 3, or 6		//alt: row - (row % sqrt);
+		int boxColStart = col - (col % sqrt); //(col/3)*3; //start 0, 3, or 6		//alt: col - (col % sqrt);
 		for (int r = boxRowStart; r < boxRowStart + sqrt; r++) {
 			for (int c = boxColStart; c < boxColStart + sqrt; c++) {
-				if (board[r][c] == num) {
-					return false;
+				if (this.board[r][c] == ch) {
+					return false; //desiredNum cannot be placed here
 				}
 			}
 		}
 
-		//checks are all invalid, safe to place num
-		return true;
+		return true; //safe to place desiredNum
 	} //end isSafe()
 
 
@@ -92,11 +97,11 @@ public class Sudoku {
 	 * @return true if the puzzle is solved; false if it cannot be solved.
 	 * Utilizes backtracking
 	 */
-	public boolean solveSudoku(int[][] board) {
+	public boolean solveSudoku(char[][] board) {
 		//backtracking
 			//finds first empty box
 			//try all numbers
-			//validate row, col, 3x3 box
+			//validate row, col, 3x3  -> isSafe()
 			//repeat
 
 		//check row
@@ -105,34 +110,35 @@ public class Sudoku {
 		boolean isEmpty = true;
 		for (int r = 0; r < SIZE; r++) {
 			for (int c = 0; c < SIZE; c++) {
-				if (board[r][c] == 0) {
+				if (this.board[r][c] == '0' || this.board[r][c] == '.') { //if empty spot, get row & col #
 					row = r;
 					col = c;
 
-					isEmpty = false;
+					isEmpty = false; //currently no longer empty, break nested for loop
 					break;
 				}
 			}
-			if (isEmpty == false) { //!isEmpty
+			if (isEmpty == false) { //!isEmpty, break outer for loop
 				break;
 			}
 		}
 
 		if (isEmpty == true) { //isEmpty
-			return true;
+			return true; //puzzle is solved
 		}
 
 		//backtrack !
-		for (int desiredNum = 1; desiredNum <= SIZE; desiredNum++) {
-			if (isSafe(board, row, col, desiredNum) == true) {
-				board[row][col] = desiredNum;
+		for (int desiredNum = 1; desiredNum <= SIZE; desiredNum++) { //1-9, inclusive
+			char dNum = String.valueOf(desiredNum).charAt(0);
+			if (isSafe(board, row, col, dNum) == true) { //check if spot is valid
+				this.board[row][col] = dNum; //place desired num in spot
 
-				if (solveSudoku(board) == true) { //recursive call
+				if (solveSudoku(board) == true) { //recursive call, try to solve next empty spot
 					return true; //board[row][col] stays as desiredNum
-				} //else, do nothing
-				else {
-					//replace it (FIXME ?)
-					board[row][col] = 0; //board[row][col] goes back as default
+
+				}
+				else { //else, replace desiredNum back to 'default' / empty spot
+					this.board[row][col] = '0'; //replace board[row][col]
 				}
 			}
 		}
@@ -147,36 +153,37 @@ public class Sudoku {
 	 */
 	public void printBoard() {
 		int sqrt = (int)Math.sqrt(SIZE); //3
-		System.out.print("  -----------------------\n"); //top row
+		System.out.print(" -----------------------\n"); //top row
 
 		//starts top left
 		for (int row = 0; row < SIZE; row++) {
-			System.out.print(" | "); //board edge (left)
+			System.out.print("| "); //board edge (left)
 
 			for (int col = 0; col < SIZE; col++) {
-				System.out.print(board[row][col] + " ");
+				System.out.print(this.board[row][col] + " ");
 				if ((col + 1) % sqrt == 0) {
 					System.out.print("| "); //dividing vert. lines + board edge (right)
 				}
 			}
 			System.out.print("\n");
 			if ((row + 1) % sqrt == 0) {
-				System.out.print("  -----------------------\n"); //dividing horz. lines + bottom row
+				System.out.print(" -----------------------\n"); //dividing horz. lines + bottom row
 			}
 		}
 	} //end printBoard()
 	
 	public static void main(String[] args) {
 		Sudoku sudoku = new Sudoku();
-		board = new int[][] {{0, 0, 0, 1, 2, 7, 0, 0, 0},
-							{0, 3, 8, 0, 0, 0, 0, 9, 0},
-							{0, 0, 4, 9, 0, 0, 0, 0, 6},
-							{4, 2, 7, 3, 5, 0, 0, 1, 8},
-							{3, 0, 0, 2, 0, 8, 0, 0, 5},
-							{8, 5, 0, 0, 4, 1, 6, 3, 2},
-							{5, 0, 0, 0, 0, 9, 7, 0, 0},
-							{0, 9, 0, 0, 0, 0, 2, 8, 0},
-							{0, 0, 0, 4, 7, 2, 0, 0, 0},};
+//		sudoku.printBoard();
+		char[][] board = new char[][] {{'0', '0', '0', '1', '2', '7', '0', '0', '0'},
+				{'0', '3', '8', '0', '0', '0', '0', '9', '0'},
+				{'0', '0', '4', '9', '0', '0', '0', '0', '6'},
+				{'4', '2', '7', '3', '5', '0', '0', '1', '8'},
+				{'3', '0', '0', '2', '0', '8', '0', '0', '5'},
+				{'8', '5', '0', '0', '4', '1', '6', '3', '2'},
+				{'5', '0', '0', '0', '0', '9', '7', '0', '0'},
+				{'0', '9', '0', '0', '0', '0', '2', '8', '0'},
+				{'0', '0', '0', '4', '7', '2', '0', '0', '0'}};
 		// solu:
 		// 		{{9, 6, 5, 1, 2, 7, 8, 4, 3},
 		//		{2, 3, 8, 5, 6, 4, 1, 9, 7},
@@ -188,7 +195,7 @@ public class Sudoku {
 		//		{7, 9, 3, 6, 1, 5, 2, 8, 4},
 		//		{6, 8, 1, 4, 7, 2, 3, 5, 9}};
 
-		sudoku.inputBoard(board);
+		sudoku.inputBoard(board); //sudoku.inputBoard(int[][] board); //starter code
 		sudoku.printBoard(); //unsolved board
 		sudoku.solveSudoku(board);
 		sudoku.printBoard(); //solved board
