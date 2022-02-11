@@ -6,7 +6,6 @@ public class Sudoku {
 	private final int SIZE = 9;
 	private char[][] board; //instance variable, space O(1) (generally n^2, but bc size is constant, it's technically 81 for the board, but reduce to 1 bc 81 is 1
 
-
 	/**
 	 * Default constructor -- construct an empty Sudoku board / puzzle.
 	 * And each board position is set to an inital int "0".
