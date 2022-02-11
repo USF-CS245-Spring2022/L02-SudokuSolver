@@ -42,6 +42,7 @@ Sudoku(): O(n^2)
 inputBoard(): O(n^2)  
 isSafe(): O(n^2)  
 solveSudoku(): O(n^2)  
+checkFinalBoard(): O(n^2)  
 printBoard(): O(n^2)  
 Where n is the size of the array, starting from 0 going up to n by 1.  
 Thus each loop runs n times (and a nested for loop resulting in n^2).  
@@ -51,4 +52,5 @@ Sudoku(): O(n^2); an nxn array is created; in this case, since the size of the 2
 inputBoard(): O(1); 3 int variables are created  
 isSafe(): O(1); 8 int variables are created  
 solveSudoku(): O(1); 5 int, 1 char, 1 boolean variables are created  
+checkFinalBoard(): O(1); 2 int variables are created  
 printBoard(): O(1); 3 int variables are created  
