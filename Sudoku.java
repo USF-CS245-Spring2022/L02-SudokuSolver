@@ -24,8 +24,7 @@ public class Sudoku {
 	/**
 	 * Input an initial starting board for Sudoku. Consider using one online, such as
 	 * https://www.sudokuoftheday.com/
-	 * @param char 9x9 Sudoku board
-	 * https://www.sudokuoftheday.com/dailypuzzles/2022-02-06/beginner/solution
+	 * @param numForBoard 9x9 Sudoku board
 	 * @throws IllegalArgumentException
 	 */
 	public void inputBoard(char[][] numForBoard) throws IllegalArgumentException {
@@ -41,14 +40,15 @@ public class Sudoku {
 			}
 		}
 
-		//check if starting nums are valid
-		//check if final board is valid
-		//check if final filled board is valid
-
-
-		//starter board, if no exception is thrown
+		//board to solve
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
+				//check if starting nums are valid
+				if (numForBoard[row][col] != '0' && numForBoard[row][col] != '.') { //if not empty spot, get row & col #
+					if (isSafe(numForBoard, row, col, numForBoard[row][col]) == false) { //!isSafe()
+						throw new IllegalArgumentException("Invalid starting Sudoku board.  Puzzle cannot be solved.");
+					}
+				}
 				this.board[row][col] = numForBoard[row][col];
 			}
 		}
@@ -59,30 +59,30 @@ public class Sudoku {
 	 * Checks if the place on Sudoku board is safe (row, col, box)
 	 * @return true if empty spot is valid place on board, false if not
 	 */
-	public boolean isSafe(char[][] board, int row, int col, char ch) {
-		int boardLen = this.board.length;
+	public boolean isSafe(char[][] board, int row, int col, char ch) { //runtime O(n^2), space O(1), 5 vars created
+		int boardLen = board.length;
 
 		//check if num is already in row, change col#
 		for (int c = 0; c < boardLen; c++) {
-			if (this.board[row][c] == ch) {
+			if (c != col && board[row][c] == ch) {
 				return false; //desiredNum cannot be placed here
 			}
 		}
 
 		//check if num is already in col, change row#
 		for (int r = 0; r < boardLen; r++) {
-			if (this.board[r][col] == ch) {
+			if (r != row && board[r][col] == ch) {
 				return false; //desiredNum cannot be placed here
 			}
 		}
 
 		//check if num is already in box, checking 1 of 9 3x3 boxes
 		int sqrt = (int)Math.sqrt(boardLen); //3
-		int boxRowStart = row - (row % sqrt); //(row/3)*3; //start 0, 3, or 6		//alt: row - (row % sqrt);
-		int boxColStart = col - (col % sqrt); //(col/3)*3; //start 0, 3, or 6		//alt: col - (col % sqrt);
+		int boxRowStart = (row / 3) * 3; //start 0, 3, or 6		//alt: row - (row % sqrt);
+		int boxColStart = (col / 3) * 3; //start 0, 3, or 6		//alt: col - (col % sqrt);
 		for (int r = boxRowStart; r < boxRowStart + sqrt; r++) {
 			for (int c = boxColStart; c < boxColStart + sqrt; c++) {
-				if (this.board[r][c] == ch) {
+				if (r != row && c != col && board[r][c] == ch) {
 					return false; //desiredNum cannot be placed here
 				}
 			}
@@ -97,18 +97,14 @@ public class Sudoku {
 	 * @return true if the puzzle is solved; false if it cannot be solved.
 	 * Utilizes backtracking
 	 */
-	public boolean solveSudoku(char[][] board) {
-		//backtracking
-			//finds first empty box
-			//try all numbers
-			//validate row, col, 3x3  -> isSafe()
-			//repeat
+	public boolean solveSudoku(char[][] board) { // O(9^m), m is blank positions that should be filled in
+		//backtracking: find first empty box, try numbers, validate row/col/3x3 through isSafe(), repeat
 
 		//check row
 		int row = -1; //initialize row, col
 		int col = -1;
 		boolean isEmpty = true;
-		for (int r = 0; r < SIZE; r++) {
+		for (int r = 0; r < SIZE; r++) { // O(n^2) time
 			for (int c = 0; c < SIZE; c++) {
 				if (this.board[r][c] == '0' || this.board[r][c] == '.') { //if empty spot, get row & col #
 					row = r;
@@ -130,7 +126,7 @@ public class Sudoku {
 		//backtrack !
 		for (int desiredNum = 1; desiredNum <= SIZE; desiredNum++) { //1-9, inclusive
 			char dNum = String.valueOf(desiredNum).charAt(0);
-			if (isSafe(board, row, col, dNum) == true) { //check if spot is valid
+			if (isSafe(this.board, row, col, dNum) == true) { //check if spot is valid
 				this.board[row][col] = dNum; //place desired num in spot
 
 				if (solveSudoku(board) == true) { //recursive call, try to solve next empty spot
@@ -143,8 +139,25 @@ public class Sudoku {
 			}
 		}
 
-		return false; //cannot solve puzzle
+		return false; //cannot solve puzzle in this way
 	} //end solveSudoku()
+
+
+	/**
+	 * Checks the final Sudoku board to makes sure it was solved.
+	 * @param board 9x9 Sudoku board
+	 * @throws IllegalArgumentException
+	 */
+	public void checkFinalBoard(char[][] board) throws IllegalArgumentException {
+		//if empty spot still exists, it's an unsolveable board, throw exception
+		for (int row = 0; row < SIZE; row ++) {
+			for (int col = 0; col < SIZE; col++) {
+				if (this.board[row][col] == '0' || this.board[row][col] == '.') {
+					throw new IllegalArgumentException("Invalid starting Sudoku board.  Puzzle cannot be solved.");
+				}
+			}
+		}
+	}
 
 
 	/**
@@ -171,19 +184,33 @@ public class Sudoku {
 			}
 		}
 	} //end printBoard()
-	
+
+
 	public static void main(String[] args) {
-		Sudoku sudoku = new Sudoku();
-//		sudoku.printBoard();
+		Sudoku sudoku = new Sudoku(); //instantiating class
+//		sudoku.printBoard(); //starter board
+
+		//board with only 2 filled in numbers
+//		char[][] board = new char[][] {{'0', '0', '0', '0', '0', '0', '0', '0', '0'},
+//				{'0', '0', '0', '0', '0', '0', '0', '0', '0'},
+//				{'0', '0', '0', '0', '0', '0', '0', '0', '0'},
+//				{'0', '0', '0', '0', '0', '0', '0', '0', '0'},
+//				{'0', '0', '1', '0', '0', '0', '0', '0', '0'},
+//				{'0', '0', '0', '0', '0', '0', '2', '0', '0'},
+//				{'0', '0', '0', '0', '0', '0', '0', '0', '0'},
+//				{'0', '0', '0', '0', '0', '0', '0', '0', '0'},
+//				{'0', '0', '0', '0', '0', '0', '0', '0', '0'}};
+
+		//https://www.sudokuoftheday.com/dailypuzzles/2022-02-06/beginner/solution
 		char[][] board = new char[][] {{'0', '0', '0', '1', '2', '7', '0', '0', '0'},
-				{'0', '3', '8', '0', '0', '0', '0', '9', '0'},
-				{'0', '0', '4', '9', '0', '0', '0', '0', '6'},
-				{'4', '2', '7', '3', '5', '0', '0', '1', '8'},
-				{'3', '0', '0', '2', '0', '8', '0', '0', '5'},
-				{'8', '5', '0', '0', '4', '1', '6', '3', '2'},
-				{'5', '0', '0', '0', '0', '9', '7', '0', '0'},
-				{'0', '9', '0', '0', '0', '0', '2', '8', '0'},
-				{'0', '0', '0', '4', '7', '2', '0', '0', '0'}};
+										{'0', '3', '8', '0', '0', '0', '0', '9', '0'},
+										{'0', '0', '4', '9', '0', '0', '0', '0', '6'},
+										{'4', '2', '7', '3', '5', '0', '0', '1', '8'},
+										{'3', '0', '0', '2', '0', '8', '0', '0', '5'},
+										{'8', '5', '0', '0', '4', '1', '6', '3', '2'},
+										{'5', '0', '0', '0', '0', '9', '7', '0', '0'},
+										{'0', '9', '0', '0', '0', '0', '2', '8', '0'},
+										{'0', '0', '0', '4', '7', '2', '0', '0', '0'}};
 		// solu:
 		// 		{{9, 6, 5, 1, 2, 7, 8, 4, 3},
 		//		{2, 3, 8, 5, 6, 4, 1, 9, 7},
@@ -198,6 +225,7 @@ public class Sudoku {
 		sudoku.inputBoard(board); //sudoku.inputBoard(int[][] board); //starter code
 		sudoku.printBoard(); //unsolved board
 		sudoku.solveSudoku(board);
+		sudoku.checkFinalBoard(board);
 		sudoku.printBoard(); //solved board
 	} //end main
 } //end class Sudoku
