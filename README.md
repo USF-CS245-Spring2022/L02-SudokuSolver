@@ -1,4 +1,7 @@
-# Lab02-Sudoku-Solver
+# Lab 2 | SudokuSolver
+Mia Kobayashi  
+10 February 2022 
+
 The backtracking algorithm, an algorithm used to solve problems incrementally.  
 For this lab, it will be used to solve a 9x9 sudoku puzzle.  
 
